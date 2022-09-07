@@ -14,6 +14,7 @@ int main(int argc, char **argv) {
     unsigned int N = 32;
     unsigned int mem_size = N * sizeof(float);
 
+
     // allocate host memory
     float *h_in = (float *)malloc(mem_size);
     float *h_out = (float *)malloc(mem_size);

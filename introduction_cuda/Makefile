@@ -1,9 +1,20 @@
 CC = nvcc
 FLAGS = -O3
 
-intro: intro.cpp
+init: 
+	mkdir bin
+
+all: intro time
+
+
+intro: intro.cu
+	$(CC) $(FLAGS) $< -o $@ 
+
+time: time.cu
 	$(CC) $(FLAGS) $< -o $@
 
+.PHONY: clean
+
 clean: 
-	rm intro
+	rm -r bin
 
