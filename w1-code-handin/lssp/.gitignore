@@ -1,0 +1,5 @@
+*.c
+*.main*
+lssp-same
+lssp-sorted
+lssp-zeros

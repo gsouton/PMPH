@@ -1,0 +1,3 @@
+[submodule "pmph-e2022-pub"]
+	path = pmph-e2022-pub
+	url = https://github.com/diku-dk/pmph-e2022-pub.git
