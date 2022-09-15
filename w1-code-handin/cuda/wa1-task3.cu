@@ -17,7 +17,7 @@
 #define GPU_RUN 100 // number of time the task will be executed on GPU
 #define BLOCK_SIZE 256
 #define MAX_BLOCK_SIZE 1024
-#define EPSILON 0.0001 
+#define EPSILON 0.001 
 
 void usage(){
     fprintf(stderr, "Use: ./wa1-taks3.cu <array_size> <block_size>\n");
@@ -145,6 +145,8 @@ int main(int argc, char **argv) {
     }else{
         printf("VALID!\n");
     }
+
+    printf("- Speedup %d \n", cpu_time/gpu_time);
 
     //Free memory
     free(host_in);
