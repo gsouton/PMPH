@@ -98,9 +98,28 @@ let spMatVctMult [num_elms] [vct_len] [num_rows]
                  (mat_shp : [num_rows]i64)
                  (vct : [vct_len]f32) : [num_rows]f32 =
 
+  -- 1. compute inclusive scan 
   let shp_sc   = scan (+) 0 mat_shp
-  -- ... continue here ...
-  in  replicate num_rows 0.0f32
+
+  -- compute the exclusive scan from the inclusive:
+  --   - rotate the array to have the last element at the begining
+  --   - set the first element to be 0
+  let shp_exc = map(\x -> if x == num_elms then 0 else x) (rotate (-1) shp_sc) -- rotating the array so num_elms at the begining
+
+  -- 2. prepare array for scatter to create flags arra
+  let input_vec = replicate num_elms false -- list of 0
+  let data_vec = replicate num_rows true -- value to use to replace in the data vector
+
+  -- 3. create the flags array
+  let flags = scatter input_vec shp_exc data_vec -- modify the 0 to 1 in the input vector according to the index_vector 
+
+  -- 4. make the product across each row
+  let prods = map (\(i,x) -> x*vct[i]) mat_val 
+
+  -- 5. sum up the products across each row of the matrix
+  let segmented_sum = sgmSumF32 flags prods 
+  -- 6. Get the last element of each sub array (flat array)
+  in map(\x -> segmented_sum[x-1]) shp_sc
   
 -- One may run with for example:
 -- $ futhark dataset --i64-bounds=0:9999 -g [1000000]i64 --f32-bounds=-7.0:7.0 -g [1000000]f32 --i64-bounds=100:100 -g [10000]i64 --f32-bounds=-10.0:10.0 -g [10000]f32 | ./spMVmult-seq -t /dev/stderr > /dev/null

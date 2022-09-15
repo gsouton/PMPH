@@ -1,0 +1,5 @@
+*.c
+spMVmult-flat
+spMVmult-seq
+*.actual
+*.expected
