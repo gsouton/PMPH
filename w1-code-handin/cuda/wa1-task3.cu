@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
     printf("--------------------------------------------\n\n");
 
     printf("----------- Checking result ----------------\n");
-    if (!check_computation(cpu_array, host_out, SIZE, 0.0001)){
+    if (!check_computation(cpu_array, host_out, SIZE, env.epsilon)){
         printf("INVALID!\n");
     }else{
         printf("VALID!\n");
