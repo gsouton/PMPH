@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <cuda_runtime.h>
 #include <math.h>
 #include <stdio.h>
@@ -54,7 +55,8 @@ void log_env(env_t *env){
 void init_env(env_t *env, int argc, char **argv){
     int array_size = SIZE;
     int block_size = BLOCK_SIZE;
-    float ep = EPSILON;
+    double ep = EPSILON;
+    
     if(argc == 4){
         if((array_size = atoi(argv[1])) <= 0){
             fprintf(stderr, "array size could not be parsed\n");
@@ -62,7 +64,7 @@ void init_env(env_t *env, int argc, char **argv){
         } else if((block_size = atoi(argv[2])) <= 0 || block_size > MAX_BLOCK_SIZE){
             fprintf(stderr, "block size could not be parsed, Note: block_size cannot be over 1024\n");
             usage();
-        } else if((ep = atof(argv[3]) <= 0)){
+        } else if((ep = strtod(argv[3], NULL) <= 0)){
             fprintf(stderr, "epsilon could not be parsed\n");
             usage();
         }
@@ -72,7 +74,7 @@ void init_env(env_t *env, int argc, char **argv){
     env->cpu_run = CPU_RUN;
     env->gpu_run = GPU_RUN;
     env->block_size = block_size;
-    env->epsilon =  ep;
+    env->epsilon =  (float)ep;
     log_env(env);
 }
 
@@ -151,7 +153,7 @@ int main(int argc, char **argv) {
     printf("--------------------------------------------\n\n");
 
     printf("----------- Checking result ----------------\n");
-    if (!check_computation(cpu_array, host_out, SIZE, env.epsilon)){
+    if (!check_computation(cpu_array, host_out, SIZE, 0.0001)){
         printf("INVALID!\n");
     }else{
         printf("VALID!\n");
