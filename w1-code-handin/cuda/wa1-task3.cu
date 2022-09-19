@@ -33,10 +33,11 @@ typedef struct env {
     unsigned int cpu_run; 
     unsigned int gpu_run; 
     unsigned int block_size; 
+    float epsilon;
 }env_t;
 
 void log_env(env_t *env){
-    printf("{\n - array_size: %d\n - mem_size: %d\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n}\n", 
+    printf("{\n - array_size: %d\n - mem_size: %ld\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n}\n", 
             env->array_size, 
             env->mem_size,
             env->cpu_run,
@@ -45,15 +46,22 @@ void log_env(env_t *env){
 }
 
 
+/**
+  * Initalize the environment picks up argument of the program if needed
+  */
 void init_env(env_t *env, int argc, char **argv){
     int array_size = SIZE;
     int block_size = BLOCK_SIZE;
-    if(argc == 3){
+    float ep = EPSILON;
+    if(argc == 4){
         if((array_size = atoi(argv[1])) <= 0){
             fprintf(stderr, "array size could not be parsed\n");
             usage();
         } else if((block_size = atoi(argv[2])) <= 0 || block_size > MAX_BLOCK_SIZE){
             fprintf(stderr, "block size could not be parsed, Note: block_size cannot be over 1024\n");
+            usage();
+        } else if((ep = atof(argv[3]) <= 0)){
+            fprintf(stderr, "epsilon could not be parsed\n");
             usage();
         }
     }
@@ -62,6 +70,7 @@ void init_env(env_t *env, int argc, char **argv){
     env->cpu_run = CPU_RUN;
     env->gpu_run = GPU_RUN;
     env->block_size = block_size;
+    env->epsilon =  ep;
     log_env(env);
 }
 
