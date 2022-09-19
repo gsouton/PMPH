@@ -37,12 +37,14 @@ typedef struct env {
 }env_t;
 
 void log_env(env_t *env){
-    printf("{\n - array_size: %d\n - mem_size: %ld\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n}\n", 
+    printf("{\n - array_size: %d\n - mem_size: %ld\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n - epsilon: %lf}\n", 
             env->array_size, 
             env->mem_size,
             env->cpu_run,
             env->gpu_run,
-            env->block_size);
+            env->block_size,
+            env->epsilon);
+
 }
 
 
