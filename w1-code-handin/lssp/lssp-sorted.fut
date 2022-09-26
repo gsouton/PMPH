@@ -7,6 +7,41 @@
 -- output { 
 --    9
 -- }
+--
+-- compiled input {
+--    [1, 3, 4, -6, 1]
+-- }  
+-- output { 
+--    3
+-- }
+--
+-- compiled input {
+--    [0, 0, 0, 0, 5, 4, -6, 1]
+-- }  
+-- output { 
+--    5
+-- }
+--
+-- compiled input {
+--    [-2, -2, 1, 2, 3, 4, 5, 3, 4, -6, 1]
+-- }  
+-- output { 
+--    7
+-- }
+--
+-- compiled input {
+--    [1, -2, -2, 0, 1, 0, 2, 0, 3, 4, 1, 2]
+-- }  
+-- output { 
+--    4
+-- }
+--
+-- compiled input {
+--    [1, 2, -2, 0, 0, 0, 0, 0, 3, 4, -6, 1]
+-- }  
+-- output { 
+--    8
+-- }
 
 import "lssp"
 import "lssp-seq"

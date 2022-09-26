@@ -38,7 +38,7 @@ typedef struct env {
 }env_t;
 
 void log_env(env_t *env){
-    printf("{\n - array_size: %d\n - mem_size: %ld\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n - epsilon: %lf}\n", 
+    fprintf(stderr, "{\n - array_size: %d\n - mem_size: %ld\n - cpu_run: %d\n - gpu_run: %d\n - block_size: %d\n - epsilon: %lf\n}\n", 
             env->array_size, 
             env->mem_size,
             env->cpu_run,
@@ -55,7 +55,7 @@ void log_env(env_t *env){
 void init_env(env_t *env, int argc, char **argv){
     int array_size = SIZE;
     int block_size = BLOCK_SIZE;
-    double ep = EPSILON;
+    float ep = EPSILON;
     
     if(argc == 4){
         if((array_size = atoi(argv[1])) <= 0){
@@ -64,9 +64,10 @@ void init_env(env_t *env, int argc, char **argv){
         } else if((block_size = atoi(argv[2])) <= 0 || block_size > MAX_BLOCK_SIZE){
             fprintf(stderr, "block size could not be parsed, Note: block_size cannot be over 1024\n");
             usage();
-        } else if((ep = strtod(argv[3], NULL) <= 0)){
-            fprintf(stderr, "epsilon could not be parsed\n");
-            usage();
+        }
+        float epsi = strtof(argv[3], NULL);
+        if(epsi > 0.0){
+            ep = epsi;
         }
     }
     env->array_size = array_size;
@@ -74,7 +75,7 @@ void init_env(env_t *env, int argc, char **argv){
     env->cpu_run = CPU_RUN;
     env->gpu_run = GPU_RUN;
     env->block_size = block_size;
-    env->epsilon =  (float)ep;
+    env->epsilon = ep;
     log_env(env);
 }
 
@@ -89,6 +90,7 @@ void log_time(unsigned long int elapsed);
 float* new_array(unsigned int size);
 int timeval_subtract(struct timeval* result, struct timeval* t2,struct timeval* t1);
 bool check_computation(float *cpu_array, float *gpu_array, unsigned int size, float epsilon);
+void log_result(unsigned long int cpu_time, unsigned long int gpu_time, bool valid);
 
 //task related functions
 unsigned long int execute_task_on_cpu(float *input, float* output, env_t* env);
@@ -139,27 +141,29 @@ int main(int argc, char **argv) {
     }
 
     //----------- CPU EXECUTION ---------------
-    printf("---------- Executing task on CPU -----------\n");
+    fprintf(stderr, "---------- Executing task on CPU -----------\n");
     float *cpu_array = new_array(env.array_size);
     unsigned long int cpu_time = execute_task_on_cpu(host_in, cpu_array, &env);
     log_time(cpu_time);
-    printf("--------------------------------------------\n\n");
+    fprintf(stderr, "--------------------------------------------\n\n");
 
     //----------- GPU EXECUTION ---------------
-    printf("---------- Executing task on GPU -----------\n");
+    fprintf(stderr, "---------- Executing task on GPU -----------\n");
     float *host_out = new_array(env.array_size);
     unsigned long int gpu_time = execute_task_on_gpu(host_in, host_out, &env);
     log_time(gpu_time);
-    printf("--------------------------------------------\n\n");
+    fprintf(stderr, "--------------------------------------------\n\n");
 
-    printf("----------- Checking result ----------------\n");
-    if (!check_computation(cpu_array, host_out, SIZE, 0.0001)){
-        printf("INVALID!\n");
+    fprintf(stderr, "----------- Checking result ----------------\n");
+    bool valid = check_computation(cpu_array, host_out, SIZE, env.epsilon);
+    if (!valid){
+        fprintf(stderr, "INVALID!\n");
     }else{
-        printf("VALID!\n");
+        fprintf(stderr, "VALID!\n");
     }
 
-    printf("- Speedup %d \n", cpu_time/gpu_time);
+    fprintf(stderr,"- Speedup %d \n", cpu_time/gpu_time);
+    log_result(cpu_time, gpu_time, valid);
 
     //Free memory
     free(host_in);
@@ -215,7 +219,7 @@ unsigned long int execute_task_on_gpu(float* host_in, float* host_out, env_t *en
 
     //Compute number of block needed
     unsigned int num_blocks = (env->array_size + (block_size - 1)) / block_size;
-    printf("{Block_size: %d, num_blocks: %d}\n", block_size, num_blocks);
+    fprintf(stderr, "{Block_size: %d, num_blocks: %d}\n", block_size, num_blocks);
 
     float *device_in;
     float *device_out;
@@ -257,7 +261,8 @@ unsigned long int execute_task_on_gpu(float* host_in, float* host_out, env_t *en
  */
 bool check_computation(float *cpu_array, float *gpu_array, unsigned int size, float epsilon){
     for(unsigned int i = 0; i < size; ++i){
-        if(fabs(cpu_array[i] - gpu_array[i]) >= epsilon){
+        if(!(fabs(cpu_array[i] - gpu_array[i]) < epsilon)){
+            fprintf(stderr, "CPU: %lf, GPU: %lf\n", cpu_array[i], gpu_array[i]);
             return false;
         }
     }
@@ -267,15 +272,22 @@ bool check_computation(float *cpu_array, float *gpu_array, unsigned int size, fl
 
 void log_array(float *array, unsigned int size){
     assert(array != NULL);
-    printf("array: %p\n", array);
+    fprintf(stderr, "array: %p\n", array);
     for(unsigned int i = 0; i < size; ++i){
-        printf("%lf\n", array[i]);
+        fprintf(stderr,"%lf\n", array[i]);
     }
-    printf("--------------------\n");
+    fprintf(stderr, "--------------------\n");
 }
 
 void log_time(unsigned long int elapsed){
-    printf("- Took %d microseconds (%.2fms)\n", elapsed, elapsed/1000.0);
+    fprintf(stderr, "- Took %d microseconds (%.2fms)\n", elapsed, elapsed/1000.0);
+}
+
+void log_result(unsigned long int cpu_time, unsigned long int gpu_time, bool valid){
+    fprintf(stdout, "%.2f\n", cpu_time/1000.0);
+    fprintf(stdout, "%.2f\n", gpu_time/1000.0);
+    fprintf(stdout, "%d\n", cpu_time/gpu_time);
+    fprintf(stdout, "%d\n", valid);
 }
 
 

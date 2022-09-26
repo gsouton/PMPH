@@ -1,0 +1,43 @@
+echo "----- OpenCL -----"
+
+echo "- lssp-sorted"
+futhark opencl lssp-sorted.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-sorted -t /dev/stderr -r 10
+
+echo "- lssp-same"
+futhark opencl lssp-same.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-same -t /dev/stderr -r 10
+
+echo "- lssp-zeros"
+futhark opencl lssp-zeros.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-zeros -t /dev/stderr -r 10
+
+echo
+echo "----- CUDA -----"
+
+echo "- lssp-sorted"
+futhark cuda lssp-sorted.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-sorted -t /dev/stderr -r 10
+
+echo "- lssp-same"
+futhark cuda lssp-same.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-same -t /dev/stderr -r 10
+
+echo "- lssp-zeros"
+futhark cuda lssp-zeros.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-zeros -t /dev/stderr -r 10
+
+echo 
+echo "----- C -----"
+
+echo "- lssp-sorted"
+futhark c lssp-sorted.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-sorted -t /dev/stderr -r 10
+
+echo "- lssp-same"
+futhark c lssp-same.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-same -t /dev/stderr -r 10
+
+echo "- lssp-zeros"
+futhark c lssp-zeros.fut && \
+futhark dataset --i32-bounds=-10:10 -b -g [10000000]i32 | ./lssp-zeros -t /dev/stderr -r 10

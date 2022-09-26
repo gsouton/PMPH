@@ -1,3 +1,7 @@
 *.c
 *.actual
 *.expected
+*.un~
+data/
+primes-naive
+primes-seq

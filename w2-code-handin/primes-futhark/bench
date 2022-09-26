@@ -1,0 +1,27 @@
+echo "--- Using C ---"
+echo "- Sequential: "
+
+futhark c primes-seq.fut;
+echo "10000000" | ./primes-seq -t /dev/stderr -r 10 > /dev/null;
+
+
+echo "- Naive: "
+
+futhark c primes-naive.fut;
+echo "10000000" | ./primes-naive -t /dev/stderr -r 10 > /dev/null;
+
+echo "- Flat: "
+
+futhark c primes-flat.fut;
+echo "10000000" | ./primes-flat -t /dev/stderr -r 10 > /dev/null;
+
+echo "--- Using openCL ---"
+echo "- Naive: "
+
+futhark opencl primes-naive.fut;
+echo "10000000" | ./primes-naive -t /dev/stderr -r 10 > /dev/null;
+
+echo "- Flat: "
+
+futhark opencl primes-flat.fut;
+echo "10000000" | ./primes-flat -t /dev/stderr -r 10 > /dev/null;

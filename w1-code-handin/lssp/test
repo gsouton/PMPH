@@ -1,0 +1,8 @@
+echo "Sorted"
+futhark test --backend=opencl lssp-sorted.fut
+
+echo "Same"
+futhark test --backend=opencl lssp-same.fut
+
+echo "Zeros"
+futhark test --backend=opencl lssp-zeros.fut

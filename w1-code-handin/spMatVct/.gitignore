@@ -3,3 +3,4 @@ spMVmult-flat
 spMVmult-seq
 *.actual
 *.expected
+*.un~

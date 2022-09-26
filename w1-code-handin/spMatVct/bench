@@ -1,0 +1,23 @@
+echo "--- C ---"
+
+echo "futhark c spMVmult-seq.fut"
+futhark c spMVmult-seq.fut
+futhark dataset --i64-bounds=0:9999 -g [1000000]i64 --f32-bounds=-7.0:7.0 -g [1000000]f32 --i64-bounds=100:100 -g [10000]i64 --f32-bounds=-10.0:10.0 -g [10000]f32 | ./spMVmult-seq -t /dev/stderr -r 10 > /dev/null
+
+echo "futhark c spMVmult-flat.fut"
+futhark c spMVmult-flat.fut
+futhark dataset --i64-bounds=0:9999 -g [1000000]i64 --f32-bounds=-7.0:7.0 -g [1000000]f32 --i64-bounds=100:100 -g [10000]i64 --f32-bounds=-10.0:10.0 -g [10000]f32 | ./spMVmult-flat -t /dev/stderr -r 10 > /dev/null
+
+echo "--- openCL ---"
+
+echo "futhark opencl spMVmult-flat.fut"
+futhark opencl spMVmult-flat.fut
+futhark dataset --i64-bounds=0:9999 -g [1000000]i64 --f32-bounds=-7.0:7.0 -g [1000000]f32 --i64-bounds=100:100 -g [10000]i64 --f32-bounds=-10.0:10.0 -g [10000]f32 | ./spMVmult-flat -t /dev/stderr -r 10 > /dev/null
+
+echo "--- cuda ---"
+
+echo "futhark cuda spMVmult-flat.fut"
+futhark cuda spMVmult-flat.fut
+futhark dataset --i64-bounds=0:9999 -g [1000000]i64 --f32-bounds=-7.0:7.0 -g [1000000]f32 --i64-bounds=100:100 -g [10000]i64 --f32-bounds=-10.0:10.0 -g [10000]f32 | ./spMVmult-flat -t /dev/stderr -r 10 > /dev/null
+
+

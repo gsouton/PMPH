@@ -1,3 +1,8 @@
 task.py
-*.un
+*.un~
 wa1-task3
+venv/**
+venv/
+test
+*.csv
+*.png

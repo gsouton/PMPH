@@ -6,8 +6,8 @@ EXEC = wa1-task3
 $(EXEC):
 	$(CC) $(FLAGS) $@.cu -o $(EXEC)
 
-test: $(EXEC)
-	./wa1-task3 $@
+default: $(EXEC)
+	./wa1-task3
 	
 
 clean:
