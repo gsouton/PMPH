@@ -176,15 +176,30 @@ class Mssp {
  *     all threads will reach the barrier, resulting in incorrect
  *     results.) 
  */ 
+// template<class OP>
+// __device__ inline typename OP::RedElTp
+// scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
+//     const unsigned int lane = idx & (WARP-1);
+//
+//     if(lane==0) {
+//         #pragma unroll
+//         for(int i=1; i<WARP; i++) {
+//             ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
+//         }
+//     }
+//     return OP::remVolatile(ptr[idx]);
+// }
+
 template<class OP>
 __device__ inline typename OP::RedElTp
 scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
-    const unsigned int lane = idx & (WARP-1);
+    int k = 5;
 
-    if(lane==0) {
-        #pragma unroll
-        for(int i=1; i<WARP; i++) {
-            ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
+    for(int d = 0; d < k; ++d){
+        int h = 2 << d;
+        int i = idx%32;
+        if (i >> h){
+            ptr[i] = OP::apply(ptr[i-h], ptr[i]);
         }
     }
     return OP::remVolatile(ptr[idx]);
