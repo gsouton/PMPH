@@ -2,6 +2,7 @@
 #define SCAN_KERS
 
 #include <cuda_runtime.h>
+#include <math.h>
 
 /**
  * Naive memcpy kernel, for the purpose of comparing with
@@ -176,34 +177,65 @@ class Mssp {
  *     all threads will reach the barrier, resulting in incorrect
  *     results.) 
  */ 
-// template<class OP>
-// __device__ inline typename OP::RedElTp
-// scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
-//     const unsigned int lane = idx & (WARP-1);
-//
-//     if(lane==0) {
-//         #pragma unroll
-//         for(int i=1; i<WARP; i++) {
-//             ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
-//         }
-//     }
-//     return OP::remVolatile(ptr[idx]);
-// }
 
 template<class OP>
 __device__ inline typename OP::RedElTp
 scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
     int k = 5;
 
+    #pragma unroll
     for(int d = 0; d < k; ++d){
-        int h = 2 << d;
+        int h = 1 << d;
+        //int h = pow((float)2, (float)d);
         int i = idx%32;
-        if (i >> h){
-            ptr[i] = OP::apply(ptr[i-h], ptr[i]);
+        if (i >= h){
+            ptr[idx] = OP::apply(ptr[idx-h], ptr[idx]);
         }
     }
     return OP::remVolatile(ptr[idx]);
 }
+
+//template<class OP>
+//__device__ inline typename OP::RedElTp
+//scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
+//    const unsigned int lane = idx & (WARP-1);
+//
+//    if(lane==0) {
+//        #pragma unroll
+//        for(int i=1; i<WARP; i++) {
+//            ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
+//        }
+//    }
+//    return OP::remVolatile(ptr[idx]);
+//}
+
+ 
+
+
+// d = 0, h = 1
+// i = 0..32
+// (i >= h) ==>  0..32
+//
+//
+// d = 1, h = 2
+// i = 0..32
+// (i >= h) ==>  2..32
+//
+// d = 2, h = 4
+// i = 0..32
+// (i >= h) ==>  4..32
+//
+// d = 3, h = 8
+// i = 0..32
+// (i >= h) ==>  8..32
+//
+// d = 4, h = 16
+// i = 0..32
+// (i >= h) ==>  16..32
+//
+// d = 5, h = 32
+// i = 0..32
+// (i >= h) ==>  None
 
 /**
  * A CUDA-block of threads cooperatively scan with generic-binop `OP`
@@ -221,8 +253,8 @@ scanIncWarp( volatile typename OP::RedElTp* ptr, const unsigned int idx ) {
 template<class OP>
 __device__ inline typename OP::RedElTp
 scanIncBlock(volatile typename OP::RedElTp* ptr, const unsigned int idx) {
-    const unsigned int lane   = idx & (WARP-1);
-    const unsigned int warpid = idx >> lgWARP;
+    const unsigned int lane   = idx & (WARP-1); // correspond to the local thread id number in the warp idx%32
+    const unsigned int warpid = idx >> lgWARP; //  correspond to the warp 0..32 if block = 1024 cause 32 warp in one block
 
     // 1. perform scan at warp level
     typename OP::RedElTp res = scanIncWarp<OP>(ptr,idx);
@@ -232,15 +264,17 @@ scanIncBlock(volatile typename OP::RedElTp* ptr, const unsigned int idx) {
     //   the first warp. This works because
     //   warp size = 32, and 
     //   max block size = 32^2 = 1024
-    if (lane == (WARP-1)) { ptr[warpid] = OP::remVolatile(ptr[idx]); } 
+    //if (lane == (WARP-1)) { ptr[warpid] = OP::remVolatile(ptr[idx]); } 
+    if (lane == (WARP-1)) { ptr[warpid] = res; } 
+    //if you are the last thread of warp: threadId(lane) == 31, place value of last thread at begin of warp 
     __syncthreads();
 
     // 3. scan again the first warp
-    if (warpid == 0) scanIncWarp<OP>(ptr, idx);
+    if (warpid == 0) scanIncWarp<OP>(ptr, idx); // scan only first warp
     __syncthreads();
 
     // 4. accumulate results from previous step;
-    if (warpid > 0) {
+    if (warpid > 0) { // for all thread in warp  1 to 31
         res = OP::apply(ptr[warpid-1], res);
     }
 

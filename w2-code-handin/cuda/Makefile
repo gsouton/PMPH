@@ -12,7 +12,7 @@ default: compile run
 compile: $(TEST_PBB) $(TEST_SPMV)
 
 $(TEST_PBB): testPBB.cu hostSkel.cu.h pbbKernels.cu.h constants.cu.h
-	$(COMPILER) $(OPT_FLAGS) -o $(TEST_PBB) testPBB.cu
+	$(COMPILER) $(OPT_FLAGS) -DOPT_SCAN=$$OPT_SCAN -o $(TEST_PBB) testPBB.cu
 
 $(TEST_SPMV): spMV-Mul-kernels.cu.h spMV-Mul-main.cu
 	$(COMPILER) $(OPT_FLAGS) -o $(TEST_SPMV) spMV-Mul-main.cu
