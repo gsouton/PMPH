@@ -82,6 +82,16 @@ origProg(float* A, float* B, unsigned int N) {
  */
 __global__ void 
 transfProg(float* Atr, float* Btr, unsigned int N) {
+    uint32_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+    if(gid >= N) return;
+    float accum = 0.0;
+
+    for(unsigned int j = 0; j < 64; j++) {
+        float tmpA = Atr[j*64+gid]; //access all columns 
+        accum = sqrt(accum) + tmpA*tmpA;
+        Btr[j*64+gid] = accum;
+        //Btr[j+64*gid] = accum;
+    }
 }
 
 /**
